@@ -1,8 +1,8 @@
 #include <Display.h>
 
-int a[7] = {12, 10, 11, 9, 7, 8, 6};
-int b[4] = {2, 3, 4, 5};
-Display display(a, b);
+int powerPins[7] = {12, 10, 11, 9, 7, 8, 6};
+int groundPins[4] = {2, 3, 4, 5};
+Display display(powerPins, groundPins);
 
 void setup() {
   Serial.begin(9600);
@@ -10,22 +10,35 @@ void setup() {
 
 
 
-int iterator[4] = {0, 0, 0, 0};
 int runTimeIndex = 0;
-
+String timeString = "";
 void loop() {
-  //  runTimeIndex++;
-  //  if (runTimeIndex > 10)
-  //  {
-  //    runTimeIndex = 0;
-  //    iterator[0]++;
-  //    if (iterator[0] > 9) {iterator[0] = 0; iterator[1]++;}
-  //    if (iterator[1] > 9) {iterator[1] = 0; iterator[2]++;}
-  //    if (iterator[2] > 9) {iterator[2] = 0; iterator[3]++;}
-  //    if (iterator[3] > 9) {iterator[3] = 0;}
-  //  }
-
-  display.writeString("232");
-
+  runTimeIndex++;
+  if (runTimeIndex > 200)
+  {
+    runTimeIndex = 0;
+    timeString = calcTimeString();
+//    Serial.println(timeString);
+  }
+  
+  display.writeString(timeString);
   delay(5);
+}
+
+
+String calcTimeString() {  
+  unsigned long minutes = millis() / 1000 / 60 + (12 * 60 + 45);
+  unsigned int hours = minutes / 60;
+  minutes -= hours * 60;
+
+  return timeToString(hours, minutes);
+}
+
+String timeToString(int hours, int minutes) {
+  String hourString = String(hours);
+  String minuteString = String(minutes);
+  if (hours < 10) hourString = "0" + hourString;
+  if (minutes < 10) minuteString = "0" + minuteString;
+
+  return hourString + minuteString;
 }
