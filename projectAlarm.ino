@@ -11,27 +11,33 @@ void setup() {
 
 
 int runTimeIndex = 0;
+
+unsigned long previousMillis = 0;
+unsigned long minutes = 15 * 60 + 19;
+
 String timeString = "";
 void loop() {
+  
+
   runTimeIndex++;
   if (runTimeIndex > 200)
   {
     runTimeIndex = 0;
     timeString = calcTimeString();
-//    Serial.println(timeString);
   }
+  if (runTimeIndex % 10 == 0) updateTime();
   
   display.writeString(timeString);
   delay(5);
 }
 
 
-String calcTimeString() {  
-  unsigned long minutes = millis() / 1000 / 60 + (12 * 60 + 45);
-  unsigned int hours = minutes / 60;
-  minutes -= hours * 60;
 
-  return timeToString(hours, minutes);
+String calcTimeString() {
+  unsigned int hours = minutes / 60;
+  int displayMinutes = minutes - hours * 60;
+
+  return timeToString(hours, displayMinutes);
 }
 
 String timeToString(int hours, int minutes) {
@@ -41,4 +47,13 @@ String timeToString(int hours, int minutes) {
   if (minutes < 10) minuteString = "0" + minuteString;
 
   return hourString + minuteString;
+}
+
+void updateTime() {
+  if ((millis() - previousMillis) / 1000 >= 60)
+  {
+    minutes++;
+    if (minutes >= 60 * 24) minutes = 0;
+    previousMillis = millis();
+  }
 }
