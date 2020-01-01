@@ -4,29 +4,61 @@ int powerPins[7] = {12, 10, 11, 9, 7, 8, 6};
 int groundPins[4] = {2, 3, 4, 5};
 Display display(powerPins, groundPins);
 
-void setup() {
-  Serial.begin(9600);
-}
+const int potentialMinutePin = A1;
+const int potentialHourPin = A0;
+const int stateButtonPin = A2;
 
 
 
 int runTimeIndex = 0;
 
 unsigned long previousMillis = 0;
-unsigned long minutes = 15 * 60 + 19;
+unsigned long minutes = 0;//15 * 60 + 19;
+
+int previousAddedMinutes = 0;
+int previousAddedHours = 0;
+
+int systemState = 0;
+// 0: time
+// 1: alarm
+// 2: set time
+// 3: set alarm
+
+
+
+
+
+void setup() {
+  Serial.begin(9600);
+  display.blinkRate = 150;
+}
+
+
+
+
+
 
 String timeString = "";
 void loop() {
-  
 
+  int addMinutes = 60 - analogRead(potentialMinutePin) / 17;
+  minutes += addMinutes - previousAddedMinutes;
+  previousAddedMinutes = addMinutes;
+
+  int addHours = 24 - analogRead(potentialHourPin) / 42;
+  minutes += (addHours - previousAddedHours) * 60;
+  previousAddedHours = addHours;
+
+  //  boolean blinking = digitalRead(stateButtonPin);
+  //  Serial.println(blinking);
+
+  timeString = calcTimeString();
   runTimeIndex++;
-  if (runTimeIndex > 200)
-  {
-    runTimeIndex = 0;
-    timeString = calcTimeString();
-  }
+  if (runTimeIndex > 100) runTimeIndex = 0;
   if (runTimeIndex % 10 == 0) updateTime();
-  
+
+
+
   display.writeString(timeString);
   delay(5);
 }
