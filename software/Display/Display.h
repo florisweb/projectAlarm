@@ -10,6 +10,7 @@ class Display
   public:
     Display(int _powerPins[7], int _groundPins[4]);
     void writeString(String text);
+    int blinkRate; // / 100: percent of the time off
   private:
     void updateDigitByNumber(int number);
     void turnAllDigitsOff();
@@ -17,6 +18,7 @@ class Display
     int powerPins[7];
     int groundPins[4];
     int digitIndex;
+    int blinkIndex;
 };
 
 

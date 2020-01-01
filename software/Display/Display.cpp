@@ -19,15 +19,20 @@ Display::Display(int _powerPins[7], int _groundPins[4])
   }
 
   digitIndex = 0;
+  blinkIndex = 0;
+  blinkRate = 0;
 }
 
 
 void Display::writeString(String text) {
-  
+
   digitIndex++;
   if (digitIndex > 3) digitIndex = 0;
   turnAllDigitsOff();
-  digitalWrite(groundPins[digitIndex], LOW);
+
+  blinkIndex++;
+  if (blinkIndex > blinkRate) blinkIndex = 0;
+  if (blinkIndex >= blinkRate * 0.3) digitalWrite(groundPins[digitIndex], LOW);
 
   updateDigitByNumber(text[digitIndex] - 48);
 }
