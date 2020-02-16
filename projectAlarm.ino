@@ -53,7 +53,7 @@ String timeString = "";
 void loop() {
   handleInputs();
 
-  if (minutes > alarmMinutes && systemState == 1)
+  if (minutes >= alarmMinutes && systemState == 1)
   {
     display.blinkRate = 100;
   } else {
