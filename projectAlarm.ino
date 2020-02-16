@@ -18,11 +18,13 @@ int runTimeIndex = 0;
 boolean prevStateButtonStatus = false;
 
 unsigned long previousMillis = 0;
-unsigned long minutes = 0;//15 * 60 + 19;
+unsigned long minutes = 21 * 60 + 13;
+unsigned long alarmMinutes = 0;
 
-int previousAddedMinutes = 0;
-int previousAddedHours = 0;
+int prevMinuteVal = 0;
+int prevHourVal = 0;
 
+int timeEditing_deltaTime = 0;
 int systemState = 0;
 // 0: time
 // 1: alarm
@@ -49,27 +51,30 @@ void setup() {
 
 String timeString = "";
 void loop() {
-  int addMinutes = 60 - analogRead(potentialMinutePin) / 17;
-  minutes += addMinutes - previousAddedMinutes;
-  previousAddedMinutes = addMinutes;
+  handleInputs();
 
-  int addHours = 24 - analogRead(potentialHourPin) / 42;
-  minutes += (addHours - previousAddedHours) * 60;
-  previousAddedHours = addHours;
+  if (minutes > alarmMinutes && systemState == 1)
+  {
+    display.blinkRate = 100;
+  } else {
+    display.blinkRate = 0;
+  }
+  //
+  //  Serial.print("Alarm: ");
+  //  Serial.print(alarmMinutes);
+  //  Serial.print(" Time: ");
+  //  Serial.println(minutes);
+
+  switch (systemState)
+  {
+    case 3: timeString = calcTimeString(alarmMinutes); break;
+    default: timeString = calcTimeString(minutes); break;
+  }
 
 
-
-
-
-  timeString = calcTimeString();
   runTimeIndex++;
   if (runTimeIndex > 100) runTimeIndex = 0;
   if (runTimeIndex % 10 == 0) updateTime();
-
-
-  boolean stateButtonPressed = digitalRead(stateButtonPin);
-  if (stateButtonPressed != prevStateButtonStatus && stateButtonPressed == true) updateSystemState();
-  prevStateButtonStatus = stateButtonPressed;
 
 
 
@@ -77,11 +82,59 @@ void loop() {
   delay(5);
 }
 
+void handleInputs() {
+  handlePotentialMeterInputs();
+
+  boolean stateButtonPressed = digitalRead(stateButtonPin);
+  if (stateButtonPressed != prevStateButtonStatus && stateButtonPressed == true) updateSystemState();
+  prevStateButtonStatus = stateButtonPressed;
+}
+
+void handlePotentialMeterInputs() {
+  if (systemState < 2) return;
+  int addedMinutes = getPotentialMeterInputInMinutes();
+
+  switch (systemState)
+  {
+    case 2:
+      if (-addedMinutes > minutes) minutes += 24 * 60;
+      minutes += addedMinutes;
+      if (minutes > 24 * 60) minutes -= 24 * 60;
+
+      break;
+    case 3:
+      if (-addedMinutes > alarmMinutes) alarmMinutes += 24 * 60;
+      alarmMinutes += addedMinutes;
+      if (alarmMinutes > 24 * 60) alarmMinutes -= 24 * 60;
+
+      break;
+  }
+
+}
 
 
-String calcTimeString() {
-  unsigned int hours = minutes / 60;
-  int displayMinutes = minutes - hours * 60;
+long getPotentialMeterInputInMinutes() {
+  int addMinutes = 60 - analogRead(potentialMinutePin) / 17;
+  int _minutes = addMinutes - prevMinuteVal;
+  prevMinuteVal = addMinutes;
+
+  int addHours = 24 - analogRead(potentialHourPin) / 42;
+  int _hours = addHours - prevHourVal;
+  prevHourVal = addHours;
+
+  return _minutes + _hours * 60;
+}
+
+
+
+
+
+
+
+
+String calcTimeString(int _minutes) {
+  unsigned int hours = _minutes / 60;
+  int displayMinutes = _minutes - hours * 60;
 
   return timeToString(hours, displayMinutes);
 }
@@ -112,16 +165,29 @@ void updateSystemState() {
   Serial.print("Systemstate: ");
   Serial.println(systemState);
 
-  setSystemStateColour();
+  timeEditing_deltaTime = 0;
+  setSystemStateConfig();
 }
 
-void setSystemStateColour() {
+void setSystemStateConfig() {
   switch (systemState)
   {
-    case 0: setSystemStateLED(0, 0, 0); break;
-    case 1: setSystemStateLED(255, 0, 0); break;
-    case 2: setSystemStateLED(0, 255, 0); break;
-    case 3: setSystemStateLED(0, 0, 255); break;
+    case 0:
+      setSystemStateLED(0, 0, 0);
+      display.blinkRate = 0;
+      break;
+    case 1:
+      setSystemStateLED(255, 0, 0);
+      display.blinkRate = 0;
+      break;
+    case 2:
+      setSystemStateLED(0, 255, 0);
+      //      display.blinkRate = 100;
+      break;
+    case 3:
+      setSystemStateLED(0, 0, 255);
+      //      display.blinkRate = 100;
+      break;
   }
 }
 
