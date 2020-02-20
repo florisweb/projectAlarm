@@ -25,7 +25,6 @@ Display::Display(int _powerPins[7], int _groundPins[4])
 
 
 void Display::writeString(String text) {
-
   digitIndex++;
   if (digitIndex > 3) digitIndex = 0;
   turnAllDigitsOff();
@@ -34,20 +33,20 @@ void Display::writeString(String text) {
   if (blinkIndex > blinkRate) blinkIndex = 0;
   if (blinkIndex >= blinkRate * 0.3) digitalWrite(groundPins[digitIndex], LOW);
 
-  updateDigitByNumber(text[digitIndex] - 48);
+  updateDigitByString(text[digitIndex]);
 }
 
 
 
 
-void Display::updateDigitByNumber(int number) {
+void Display::updateDigitByString(char _string) {
   for (int i = 0; i < sizeof(powerPins) / sizeof(int); i++)
   {
     int curPin = powerPins[i];
     digitalWrite(curPin, LOW);
   }
 
-  String pins = numberToPins(number);
+  String pins = stringToPins(_string);
 
   for (int i = 0; i < pins.length(); i++)
   {
@@ -67,18 +66,17 @@ void Display::turnAllDigitsOff() {
 
 
 
-String Display::numberToPins(int number) {
-  switch (number) {
-    case 0: return "012456"; break;
-    case 1: return "25"; break;
-    case 2: return "02346"; break;
-    case 3: return "02356"; break;
-    case 4: return "1235"; break;
-    case 5: return "01356"; break;
-    case 6: return "013456"; break;
-    case 7: return "025"; break;
-    case 8: return "0123456"; break;
-    case 9: return "012356"; break;
-    default: return ""; break;
-  }
+String Display::stringToPins(char _string) {
+  if (_string == *"0") return "012456";
+  if (_string == *"1") return "25";
+  if (_string == *"2") return "02346";
+  if (_string == *"3") return "02356";
+  if (_string == *"4") return "1235";
+  if (_string == *"5") return "01356";
+  if (_string == *"6") return "013456";
+  if (_string == *"7") return "025";
+  if (_string == *"8") return "0123456";
+  if (_string == *"9") return "012356";
+  if (_string == *"_") return "6";
+  return "";
 }

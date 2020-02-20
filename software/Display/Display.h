@@ -12,9 +12,9 @@ class Display
     void writeString(String text);
     int blinkRate; // / 100: percent of the time off
   private:
-    void updateDigitByNumber(int number);
+    void updateDigitByString(char _string);
     void turnAllDigitsOff();
-    String numberToPins(int number);
+    String stringToPins(char _string);
     int powerPins[7];
     int groundPins[4];
     int digitIndex;
