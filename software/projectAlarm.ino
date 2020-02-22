@@ -1,12 +1,14 @@
 #include <Display.h>
 
 int powerPins[7] = {12, 10, 11, 9, 7, 8, 6};
-int groundPins[4] = {2, 3, 4, 5};
+int groundPins[4] = {5, 4, 3, 2};
 Display display(powerPins, groundPins);
 
 const int potentialMinutePin = A1;
 const int potentialHourPin = A0;
 const int stateButtonPin = A2;
+
+const int piezoPin = 13;
 
 const int stateLEDRedPin = A3;
 const int stateLEDGreenPin = A5;
@@ -42,8 +44,8 @@ void setup() {
   pinMode(stateLEDRedPin, OUTPUT);
   pinMode(stateLEDGreenPin, OUTPUT);
   pinMode(stateLEDBluePin, OUTPUT);
+  pinMode(piezoPin, OUTPUT);
 }
-
 
 
 
@@ -53,17 +55,7 @@ String timeString = "";
 void loop() {
   handleInputs();
 
-  if (minutes >= alarmMinutes && systemState == 1)
-  {
-    display.blinkRate = 100;
-  } else {
-    display.blinkRate = 0;
-  }
-  //
-  //  Serial.print("Alarm: ");
-  //  Serial.print(alarmMinutes);
-  //  Serial.print(" Time: ");
-  //  Serial.println(minutes);
+  handleAlarm();
 
   switch (systemState)
   {
@@ -82,6 +74,30 @@ void loop() {
   delay(5);
 }
 
+
+
+int alarmIterator = 0;
+void handleAlarm() {
+  if (minutes < alarmMinutes || systemState != 1)
+  {
+    display.blinkRate = 0;
+    return;
+  }
+
+  display.blinkRate = 88;
+  
+  alarmIterator++;
+  if (alarmIterator > 88) 
+  {
+    alarmIterator = 0;
+    tone(piezoPin, 200, 220);
+  }
+}
+
+
+
+
+
 void handleInputs() {
   handlePotentialMeterInputs();
 
@@ -89,6 +105,7 @@ void handleInputs() {
   if (stateButtonPressed != prevStateButtonStatus && stateButtonPressed == true) updateSystemState();
   prevStateButtonStatus = stateButtonPressed;
 }
+
 
 void handlePotentialMeterInputs() {
   if (systemState < 2) return;
@@ -109,7 +126,6 @@ void handlePotentialMeterInputs() {
 
       break;
   }
-
 }
 
 
